@@ -29,6 +29,9 @@ def classify_image(image_path: str):
         image = Image.open(image_path)
         image = image.convert("RGB")
 
+        target_size = (224, 224)
+        image = image.resize(target_size, Image.Resampling.BILINEAR)
+
         cls = get_classifier()
         results = cls(image)
 
