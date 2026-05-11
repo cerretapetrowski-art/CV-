@@ -4,6 +4,7 @@ import torchvision.models as models
 from PIL import Image
 import os
 import sys
+import numpy as np
 
 model = None
 labels = None
@@ -17,7 +18,17 @@ def get_model():
         model = models.resnet50(weights=weights)
         model.eval()
         labels = weights.meta["categories"]
-        transform = weights.transforms()
+
+        transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            ),
+        ])
+
         print("模型加载完成", file=sys.stderr)
     return model, labels, transform
 
