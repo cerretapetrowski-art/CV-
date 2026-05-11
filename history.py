@@ -13,12 +13,6 @@ def ensure_history_file():
     if not HISTORY_FILE.exists():
         HISTORY_FILE.write_text("{}")
 
-def get_user_id(request):
-    user_id = request.headers.get("X-User-ID")
-    if not user_id:
-        user_id = str(uuid.uuid4())
-    return user_id
-
 def add_record(user_id: str, image_name: str, results: list):
     ensure_history_file()
     data = json.loads(HISTORY_FILE.read_text())

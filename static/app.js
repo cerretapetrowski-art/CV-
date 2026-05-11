@@ -26,6 +26,16 @@ const historyList = document.getElementById('historyList');
 const historyEmpty = document.getElementById('historyEmpty');
 const loadingOverlay = document.getElementById('loadingOverlay');
 
+function showLoading(show) {
+    if (loadingOverlay) {
+        if (show) {
+            loadingOverlay.style.display = 'flex';
+        } else {
+            loadingOverlay.style.display = 'none';
+        }
+    }
+}
+
 uploadArea.addEventListener('click', () => {
     if (!selectedFile) {
         fileInput.click();
@@ -114,11 +124,11 @@ function handleFile(file) {
 function showPreview(show) {
     const uploadContent = uploadArea.querySelector('.upload-content');
     if (show) {
-        uploadContent.hidden = true;
-        previewArea.hidden = false;
+        uploadContent.style.display = 'none';
+        previewArea.style.display = 'block';
     } else {
-        uploadContent.hidden = false;
-        previewArea.hidden = true;
+        uploadContent.style.display = 'block';
+        previewArea.style.display = 'none';
     }
 }
 
@@ -127,11 +137,15 @@ function clearSelection() {
     fileInput.value = '';
     showPreview(false);
     btnIdentify.disabled = true;
-    resultSection.hidden = true;
+    if (resultSection) {
+        resultSection.style.display = 'none';
+    }
 }
 
 function showResults(results) {
-    resultSection.hidden = false;
+    if (resultSection) {
+        resultSection.style.display = 'block';
+    }
     resultList.innerHTML = '';
 
     const rankClasses = ['gold', 'silver', 'bronze'];
@@ -159,7 +173,10 @@ function showResults(results) {
         resultList.appendChild(item);
 
         setTimeout(() => {
-            item.querySelector('.confidence-fill').style.width = percentage + '%';
+            const fill = item.querySelector('.confidence-fill');
+            if (fill) {
+                fill.style.width = percentage + '%';
+            }
         }, 100);
     });
 }
@@ -172,10 +189,6 @@ function formatLabel(label) {
     return label.split('/').pop().replace(/_/g, ' ');
 }
 
-function showLoading(show) {
-    loadingOverlay.hidden = !show;
-}
-
 async function loadHistory() {
     try {
         const response = await fetch('/api/history', {
@@ -185,7 +198,9 @@ async function loadHistory() {
         });
 
         if (!response.ok) {
-            historyEmpty.style.display = 'block';
+            if (historyEmpty) {
+                historyEmpty.style.display = 'block';
+            }
             return;
         }
 
@@ -193,14 +208,22 @@ async function loadHistory() {
         const records = data.records || [];
 
         if (records.length === 0) {
-            historyEmpty.style.display = 'block';
-            historyList.innerHTML = '';
-            historyList.appendChild(historyEmpty);
+            if (historyEmpty) {
+                historyEmpty.style.display = 'block';
+            }
+            if (historyList) {
+                historyList.innerHTML = '';
+                historyList.appendChild(historyEmpty);
+            }
             return;
         }
 
-        historyEmpty.style.display = 'none';
-        historyList.innerHTML = '';
+        if (historyEmpty) {
+            historyEmpty.style.display = 'none';
+        }
+        if (historyList) {
+            historyList.innerHTML = '';
+        }
 
         records.slice(0, 10).forEach(record => {
             const item = document.createElement('div');
@@ -227,11 +250,15 @@ async function loadHistory() {
                 <div class="history-time">${time}</div>
             `;
 
-            historyList.appendChild(item);
+            if (historyList) {
+                historyList.appendChild(item);
+            }
         });
     } catch (error) {
         console.error('加载历史记录失败:', error);
-        historyEmpty.style.display = 'block';
+        if (historyEmpty) {
+            historyEmpty.style.display = 'block';
+        }
     }
 }
 
@@ -256,4 +283,5 @@ function formatTime(isoString) {
     }
 }
 
+showLoading(false);
 loadHistory();

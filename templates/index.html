@@ -8,6 +8,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .loading-overlay {
+            display: none;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -26,8 +34,8 @@
         <main class="main">
             <section class="upload-section">
                 <div class="upload-area" id="uploadArea">
-                    <input type="file" id="fileInput" accept="image/*" hidden>
-                    <div class="upload-content">
+                    <input type="file" id="fileInput" accept="image/*">
+                    <div class="upload-content" id="uploadContent">
                         <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                             <polyline points="17 8 12 3 7 8"/>
@@ -36,9 +44,9 @@
                         <p class="upload-text">拖拽图片到此处，或<span class="highlight">点击上传</span></p>
                         <p class="upload-hint">支持 JPG、PNG、WebP 格式，最大 10MB</p>
                     </div>
-                    <div class="preview-area" id="previewArea" hidden>
+                    <div class="preview-area" id="previewArea" style="display: none;">
                         <img id="previewImage" alt="预览">
-                        <button class="btn-remove" id="btnRemove">
+                        <button class="btn-remove" id="btnRemove" type="button">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="18" y1="6" x2="6" y2="18"/>
                                 <line x1="6" y1="6" x2="18" y2="18"/>
@@ -55,7 +63,7 @@
                 </button>
             </section>
 
-            <section class="result-section" id="resultSection" hidden>
+            <section class="result-section" id="resultSection" style="display: none;">
                 <h2 class="section-title">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
@@ -91,7 +99,7 @@
         </footer>
     </div>
 
-    <div class="loading-overlay" id="loadingOverlay" hidden>
+    <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
         <p class="loading-text">正在识别中...</p>
     </div>
