@@ -1,6 +1,5 @@
 import os
 import uuid
-import aiofiles
 from datetime import datetime
 from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, Request, HTTPException
@@ -55,8 +54,14 @@ async def classify(request: Request, file: UploadFile = File(...)):
 
     try:
         content = await file.read()
-        async with aiofiles.open(file_path, 'wb') as f:
-            await f.write(content)
+
+        if not content or len(content) == 0:
+            raise HTTPException(status_code=400, detail="上传的文件为空")
+
+        with open(file_path, 'wb') as f:
+            f.write(content)
+            f.flush()
+            os.fsync(f.fileno())
 
         results = ml_model.classify_image(str(file_path))
 
@@ -70,6 +75,8 @@ async def classify(request: Request, file: UploadFile = File(...)):
             "record_id": record["id"]
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:

@@ -80,7 +80,7 @@ btnIdentify.addEventListener('click', async () => {
 
         const data = await response.json();
 
-        if (data.success) {
+        if (response.ok && data.success) {
             showResults(data.results);
             clearSelection();
             loadHistory();
@@ -183,12 +183,19 @@ async function loadHistory() {
                 'X-User-ID': userId
             }
         });
-        const data = await response.json();
 
+        if (!response.ok) {
+            historyEmpty.style.display = 'block';
+            return;
+        }
+
+        const data = await response.json();
         const records = data.records || [];
 
         if (records.length === 0) {
             historyEmpty.style.display = 'block';
+            historyList.innerHTML = '';
+            historyList.appendChild(historyEmpty);
             return;
         }
 
@@ -224,6 +231,7 @@ async function loadHistory() {
         });
     } catch (error) {
         console.error('加载历史记录失败:', error);
+        historyEmpty.style.display = 'block';
     }
 }
 
