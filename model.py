@@ -1,4 +1,4 @@
-from transformers import AutoImageProcessor, AutoModelForImageClassification
+from transformers import ViTImageProcessor, ViTForImageClassification
 from PIL import Image
 import os
 import sys
@@ -12,8 +12,8 @@ def get_model_and_processor():
     if model is None:
         print("正在加载模型...", file=sys.stderr)
         model_name = "google/vit-base-patch16-224"
-        processor = AutoImageProcessor.from_pretrained(model_name)
-        model = AutoModelForImageClassification.from_pretrained(model_name)
+        processor = ViTImageProcessor.from_pretrained(model_name)
+        model = ViTForImageClassification.from_pretrained(model_name)
         model.eval()
         print("模型加载完成", file=sys.stderr)
     return model, processor
@@ -29,10 +29,11 @@ def classify_image(image_path: str):
     try:
         image = Image.open(image_path)
         image = image.convert("RGB")
+        image = image.resize((224, 224), Image.Resampling.BILINEAR)
 
         model_obj, proc = get_model_and_processor()
 
-        inputs = proc(images=image, return_tensors="pt")
+        inputs = proc(images=[image], return_tensors="pt", do_resize=False)
 
         with torch.no_grad():
             outputs = model_obj(**inputs)
