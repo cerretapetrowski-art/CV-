@@ -1,22 +1,25 @@
-from transformers import ViTImageProcessor, ViTForImageClassification
+import torch
+import torchvision.transforms as transforms
+import torchvision.models as models
 from PIL import Image
 import os
 import sys
-import torch
 
 model = None
-processor = None
+labels = None
+transform = None
 
-def get_model_and_processor():
-    global model, processor
+def get_model():
+    global model, labels, transform
     if model is None:
         print("正在加载模型...", file=sys.stderr)
-        model_name = "google/vit-base-patch16-224"
-        processor = ViTImageProcessor.from_pretrained(model_name)
-        model = ViTForImageClassification.from_pretrained(model_name)
+        weights = models.ResNet50_Weights.IMAGENET1K_V2
+        model = models.resnet50(weights=weights)
         model.eval()
+        labels = weights.meta["categories"]
+        transform = weights.transforms()
         print("模型加载完成", file=sys.stderr)
-    return model, processor
+    return model, labels, transform
 
 def classify_image(image_path: str):
     if not os.path.exists(image_path):
@@ -27,25 +30,22 @@ def classify_image(image_path: str):
         raise ValueError("文件为空")
 
     try:
-        image = Image.open(image_path)
-        image = image.convert("RGB")
-        image = image.resize((224, 224), Image.Resampling.BILINEAR)
+        image = Image.open(image_path).convert("RGB")
 
-        model_obj, proc = get_model_and_processor()
+        m, lbls, trans = get_model()
 
-        inputs = proc(images=[image], return_tensors="pt", do_resize=False)
+        input_tensor = trans(image).unsqueeze(0)
 
         with torch.no_grad():
-            outputs = model_obj(**inputs)
-            logits = outputs.logits
-            probs = torch.softmax(logits, dim=-1)
+            outputs = m(input_tensor)
+            probs = torch.softmax(outputs, dim=-1)
             top5_probs, top5_indices = torch.topk(probs, k=5, dim=-1)
 
         results = []
         for i in range(5):
-            label_id = top5_indices[0][i].item()
+            idx = top5_indices[0][i].item()
             score = top5_probs[0][i].item()
-            label = model_obj.config.id2label[label_id]
+            label = lbls[idx]
             results.append({
                 "label": label,
                 "score": score

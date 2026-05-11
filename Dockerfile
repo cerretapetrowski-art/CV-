@@ -2,8 +2,8 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-ENV HF_ENDPOINT=https://hf-mirror.com
 ENV DATA_DIR=/data
+ENV TORCH_HOME=/app/.torch_cache
 
 RUN apt-get update && apt-get install -y \
     curl \
@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /data /app/uploads
+RUN mkdir -p /data /app/uploads /app/.torch_cache
 
 EXPOSE 8000
 
